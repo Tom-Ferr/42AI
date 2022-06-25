@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+import sys
 
 def normalization(value, mini, maxi):
     return (value - mini) / (maxi -  mini)
@@ -17,6 +18,7 @@ def derivatives(X, Y):
 
 def gradient_descent():
     global theta_not, theta_one
+    global Y_hat
     theta_not = theta_one = 0
     X_norm = normalization(X, X.min(), X.max())
     Y_norm = normalization(Y, Y.min(), Y.max())
@@ -30,7 +32,6 @@ def gradient_descent():
     Y_hat = linear_interpolation(Y_hat_norm, Y.min(), Y.max())              #prediction
     theta_one = (Y_hat[1] - Y_hat[0]) / (X[1] - X[0])                       #slope
     theta_not = Y_hat[0] - theta_one * X[0]                                 #interception
-    print("Theta 0 = {}, Theta 1 = {}".format(theta_not, theta_one))
 
 """
 Main
@@ -47,5 +48,14 @@ Y = data.loc[0:]['price']
 
 #run
 gradient_descent()
-data.plot(kind = 'scatter', x = 'km', y = 'price')
-plt.show()
+f = open(".thetas.csv", "w")
+f.write("theta0,theta1\n{},{}".format(theta_not,theta_one))
+f.close()
+if len(sys.argv) > 1:
+    if sys.argv[1] == "-b":
+        plt.title("ft_linear_regression")
+        plt.xlabel("km")
+        plt.ylabel("price")
+        plt.scatter(X,Y)
+        plt.plot(X,Y_hat, color="black")
+        plt.show()
