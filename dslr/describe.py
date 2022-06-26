@@ -1,10 +1,25 @@
 import pandas as pd
 import sys
 import math
+import numpy as np
 
-def percentile(x):
-    p = x * (n + 1) / 100
-    return round(p)
+def linear_interpolation(value, mini, maxi):
+    return (maxi - mini) * value + mini
+
+def normalization(value, mini, maxi):
+    return (value - mini) / (maxi -  mini)
+
+def percentile(df, x):
+    p = x/100 * (n + 1)
+    df = np.array(df)
+    df.sort()
+    if p.is_integer():
+        return df[p]
+    i = int(p)
+    p = p - i
+    j = i - 1
+    return linear_interpolation(p, df[i], df[j])
+
 
 def create_desc():
     i_ls = []
@@ -20,8 +35,9 @@ def description_gen():
     for j in range(m):
         try:
             column = data.iloc[:,j]
-            count = summ = summ_sq = 0
+            count = summ = summ_sq = 0.0
             mini = maxi = column[0]
+            
             for i in range(n):
                 if not pd.isnull(column[i]):
                     count += 1
@@ -38,9 +54,8 @@ def description_gen():
             desc[i_ls[j]].append(mean)
             desc[i_ls[j]].append(std)
             desc[i_ls[j]].append(mini)
-            column.sort_values()
             for x in range(25, 100, 25):
-                desc[i_ls[j]].append(column[percentile(x)])
+                desc[i_ls[j]].append(percentile(column, x))
             desc[i_ls[j]].append(maxi)
         except:
             desc.pop(i_ls[j])
@@ -56,8 +71,6 @@ if len(sys.argv) > 1:
     n = data.shape[0]
     m = data.shape[1]
     desc = description_gen()
-
-    
     desc =  pd.DataFrame(desc, index = ['Count','Mean','Std','Min','25%','50%','75%','Max'])
     print(desc)
     print(data.describe())
