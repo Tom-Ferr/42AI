@@ -6,9 +6,9 @@ thetas = pd.read_csv('.thetas.csv')
 t0 = thetas.loc[0][0]
 t1 = thetas.loc[0][1]
 
-X_hat = int(input("Please, enter your car's milleage, then I'll predict a price for it:\n"))
+X_hat = int(input("Please, enter your car's mileage, then I'll predict a price for it:\n"))
 Y_hat = int(X_hat * t1 + t0)
-print("Your car should be priced at {}".format(Y_hat))
+print("The estimate price of your car is {}".format(Y_hat))
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "-b":
