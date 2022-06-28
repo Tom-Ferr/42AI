@@ -6,15 +6,11 @@ import numpy as np
 def linear_interpolation(value, mini, maxi):
     return (maxi - mini) * value + mini
 
-def normalization(value, mini, maxi):
-    return (value - mini) / (maxi -  mini)
-
-def percentile(df, x):
+def ft_percentile(df, x):
+    n = len(df)
     p = x/100 * (n + 1)
     df = np.array(df)
     df.sort()
-    if p.is_integer():
-        return df[p]
     i = int(p)
     p = p - i
     j = i - 1
@@ -22,9 +18,7 @@ def percentile(df, x):
 
 
 def create_desc():
-    i_ls = []
-    for i in range(m):
-        i_ls.append("Feature {}".format(i+1))
+    i_ls = data.columns
     desc = {}
     for i in i_ls:
         desc[i] = []
@@ -34,29 +28,39 @@ def description_gen():
     i_ls, desc = create_desc()
     for j in range(m):
         try:
-            column = data.iloc[:,j]
+            column = np.array(data.iloc[:,j])
             count = summ = summ_sq = 0.0
             mini = maxi = column[0]
-            
+            trash = []
             for i in range(n):
-                if not pd.isnull(column[i]):
-                    count += 1
+                if pd.isnull(column[i]):
+                    trash.append(i)
+                    continue
+                count += 1
                 summ_sq += column[i]**2
                 summ += column[i]
                 if column[i] < mini:
                     mini = column[i]
                 if column[i] > maxi:
                     maxi = column[i]
-            mean = summ / n
-            std = summ_sq - (summ**2 / n)
-            std = math.sqrt(std / (n - 1))
+            column = np.delete(column, trash)
+            mean = summ / count
+            std = summ_sq - (summ**2 / count)
+            std = math.sqrt(std / (count - 1))
             desc[i_ls[j]].append(count)
             desc[i_ls[j]].append(mean)
             desc[i_ls[j]].append(std)
             desc[i_ls[j]].append(mini)
             for x in range(25, 100, 25):
-                desc[i_ls[j]].append(percentile(column, x))
+                desc[i_ls[j]].append(ft_percentile(column, x))
             desc[i_ls[j]].append(maxi)
+            #bonus
+            desc[i_ls[j]].append(maxi - mini)   #range
+            iqr = ft_percentile(column, 75) - ft_percentile(column, 25)
+            desc[i_ls[j]].append(iqr)
+            vari = summ_sq - (summ**2 / (count - 1))
+            vari = math.sqrt(std / count)
+            desc[i_ls[j]].append(vari)
         except:
             desc.pop(i_ls[j])
             continue
@@ -71,7 +75,8 @@ if len(sys.argv) > 1:
     n = data.shape[0]
     m = data.shape[1]
     desc = description_gen()
-    desc =  pd.DataFrame(desc, index = ['Count','Mean','Std','Min','25%','50%','75%','Max'])
+    desc =  pd.DataFrame(desc, index = ['Count','Mean','Std','Min','25%','50%','75%','Max',
+    'Range', 'IQR', 'Variance'])
     print(desc)
-    print(data.describe())
+
     
