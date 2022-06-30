@@ -1,11 +1,11 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
+
 data = pd.read_csv('dataset_train.csv')
 
 feats = data.dropna()
 n = feats.shape[0]
-bins = 15
 col = feats.columns[6:]
 houses = ('Ravenclaw', 'Slytherin', 'Gryffindor', 'Hufflepuff')
 colors = {'Ravenclaw': 'blue', 'Slytherin': 'green', 'Gryffindor': 'red', 'Hufflepuff': 'yellow'}
@@ -17,7 +17,7 @@ prog = '             ' #blank spaces
 print('\r\033[0KGathering data [{}]'.format(prog), end='')
 for j in range(13):
     for i in houses:
-        ax[x][y].hist(groups.get_group(i).loc[:][col[j]], bins=bins, edgecolor='black',color=colors[i], alpha=0.3)
+        ax[x][y].scatter(groups.get_group(i).loc[:,'Index'], groups.get_group(i).loc[:][col[j]], color=colors[i], alpha=0.3)
     ax[x][y].title.set_text(col[j])
     y += 1
     if y >= 4:
