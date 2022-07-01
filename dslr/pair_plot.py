@@ -1,35 +1,49 @@
 import matplotlib.pyplot as plt
-import seaborn as sns
 import pandas as pd
-from pandas.plotting import scatter_matrix
 
 
 
 data = pd.read_csv('dataset_train.csv')
 feats = data.dropna()
-col = pd.DataFrame(feats.columns[6:])
 
-scatter_matrix(data, alpha = 0.2, figsize = (13, 13), diagonal = 'kde')
-# n = feats.shape[0]
-# houses = ('Ravenclaw', 'Slytherin', 'Gryffindor', 'Hufflepuff')
-# colors = {'Ravenclaw': 'blue', 'Slytherin': 'green', 'Gryffindor': 'red', 'Hufflepuff': 'yellow'}
+col = feats.columns[6:]
+houses = ('Ravenclaw', 'Slytherin', 'Gryffindor', 'Hufflepuff')
+colors = {'Ravenclaw': 'blue', 'Slytherin': 'green', 'Gryffindor': 'red', 'Hufflepuff': 'yellow'}
 
-# fig, ax = plt.subplots(13,13)
-# groups = feats.groupby('Hogwarts House')
-# x = y = 0
-# for j in range(13):
-#     for i in houses:
-#         ax[x][y].scatter(groups.get_group(i).loc[:,'Index'], groups.get_group(i).loc[:][col[j]], color=colors[i], alpha=0.3)
-#     ax[x][y].title.set_text(col[j])
-#     y += 1
-#     if y >= 13:
-#         y = 0
-#         x += 1
-# fig.delaxes(ax[3,1])
-# fig.delaxes(ax[3,2])
-# fig.delaxes(ax[3,3])
-# fig.legend(labels=houses, bbox_to_anchor=(0.55, 0.2))
-# fig.set_figwidth(15)
-# fig.set_figheight(7)
-# fig.tight_layout()
+fig, ax = plt.subplots(13,13)
+groups = feats.groupby('Hogwarts House')
+prog = '             ' #blank spaces
+
+print('\r\033[0KGathering data [{}]'.format(prog), end='')
+
+for y in range(13):
+    for x in range(13):
+        if x == y:
+            for k in houses:
+                ax[x][y].hist(groups.get_group(k).loc[:][col[x]], bins=15, edgecolor='black',color=colors[k], alpha=0.3)
+        else:           
+            for k in houses:
+                ax[x][y].scatter(groups.get_group(k).loc[:][col[x]], groups.get_group(k).loc[:][col[y]], color=colors[k], alpha=0.1)
+        if y == 0:
+            ax[x, y].set_title(col[x], fontsize=6, x=-1, y=0.2)
+            ax[x][y].yaxis.set_ticks_position('left')
+        else:
+            ax[x][y].yaxis.set_visible(False)
+        if x == 12:
+            ax[x, y].set_xlabel(col[y], fontsize=5)
+            ax[x][y].xaxis.set_ticks_position('bottom')
+        else:
+            ax[x][y].xaxis.set_visible(False)
+    prog = prog.replace(" ", "-", 1)
+    print('\r\033[0KGathering data [{}]'.format(prog), end='')
+print('\nPlotting...')
+fig.legend(labels=houses, bbox_to_anchor=(0.11, 0.15))
+fig.set_figwidth(15)
+fig.set_figheight(7.5)
+fig.subplots_adjust(left=0.13,
+                    bottom=0.15, 
+                    right=0.99, 
+                    top=0.99, 
+                    wspace=0, 
+                    hspace=0)
 plt.show()

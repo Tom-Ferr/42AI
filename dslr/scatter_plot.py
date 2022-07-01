@@ -25,7 +25,7 @@ for j in range(13):
         x += 1
     prog = prog.replace(" ", "-", 1)
     print('\r\033[0KGathering data [{}]'.format(prog), end='')
-print('\nPloting...')
+print('\nPlotting...')
 fig.delaxes(ax[3,1])
 fig.delaxes(ax[3,2])
 fig.delaxes(ax[3,3])
