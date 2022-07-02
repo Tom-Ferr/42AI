@@ -37,25 +37,34 @@ def gradient_descent():
 Main
 """
 #variables
-data = pd.read_csv('data.csv')
-m = data.shape[0]
-learning_rate = 0.1
-iters = 2000
-theta_not = 0
-theta_one = 0
-X = data.loc[0:]['km']
-Y = data.loc[0:]['price']
+try:
+    data = pd.read_csv('data.csv')
+except:
+    print('File not found or it is corrupted.\nPlease, make sure that ./data.csv is available.')
+    exit(1)
+try:
+    m = data.shape[0]
+    learning_rate = 0.1
+    iters = 2000
+    theta_not = 0
+    theta_one = 0
+    X = data.loc[0:]['km']
+    Y = data.loc[0:]['price']
 
-#run
-gradient_descent()
-f = open(".thetas.csv", "w")
-f.write("theta0,theta1\n{},{}".format(theta_not,theta_one))
-f.close()
-if len(sys.argv) > 1:
-    if sys.argv[1] == "-b":
-        plt.title("ft_linear_regression")
-        plt.xlabel("km")
-        plt.ylabel("price")
-        plt.scatter(X,Y)
-        plt.plot(X,Y_hat, color="black")
-        plt.show()
+    #run
+    gradient_descent()
+    f = open(".thetas.csv", "w")
+    f.write("theta0,theta1\n{},{}".format(theta_not,theta_one))
+    f.close()
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "-b":
+            plt.title("ft_linear_regression")
+            plt.xlabel("km")
+            plt.ylabel("price")
+            plt.scatter(X,Y)
+            plt.plot(X,Y_hat, color="black")
+            plt.show()
+
+except:
+    print('Please, make sure that ./data.csv is well formatted.')
+    exit(2)

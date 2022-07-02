@@ -71,12 +71,18 @@ Main
 """
 
 if len(sys.argv) > 1:
-    data = pd.read_csv(sys.argv[1])
+    try:
+        data = pd.read_csv(sys.argv[1])
+    except:
+        print('File was not found or it is corrupted')
+        exit(1)
     n = data.shape[0]
     m = data.shape[1]
     desc = description_gen()
     desc =  pd.DataFrame(desc, index = ['Count','Mean','Std','Min','25%','50%','75%','Max',
     'Range', 'IQR', 'Variance'])
     print(desc)
+else:
+    print('No, dataset to describe')
 
     
