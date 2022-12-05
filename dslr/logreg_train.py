@@ -18,7 +18,7 @@ def hypothesis(x, thetas):
 
 def gradient_descent(X,Y):
     learning_rate = 0.1
-    iters = 2000
+    epoch = 2000
     x = np.hstack((np.ones((X.shape[0],1)), X))
     m = x.shape[0]
     theta = []
@@ -27,8 +27,8 @@ def gradient_descent(X,Y):
     for house in np.unique(Y):
         thetas = np.zeros(x.shape[1])
         y = np.where(Y == house, 1, 0)
-        for it in range(iters):
-            print("\r\033[0Klearning in batch mode... {}%".format(int((((it + (iters * count)) +1) / (iters * 4))*100)), end="")
+        for i in range(epoch):
+            print("\r\033[0Klearning in batch mode... {}%".format(int((((i + (epoch * count)) +1) / (epoch * 4))*100)), end="")
             gradient = np.dot(x.T, (hypothesis(x, thetas) - y)) / m
             thetas -= learning_rate * gradient
         theta.append((thetas, house))
@@ -38,42 +38,40 @@ def gradient_descent(X,Y):
 
 def stochastic_gradient_descent(X,Y):
     learning_rate = 0.1
-    iters = 2000
     x = np.hstack((np.ones((X.shape[0],1)), X))
     m = x.shape[0]
     theta = []
 
-    count = 0
+    epoch = 0
     for house in np.unique(Y):
         thetas = np.zeros(x.shape[1])
         y = np.where(Y == house, 1, 0)
-        for r in range(m):
-            print("\r\033[0Klearning in stochastic mode... {}%".format(int((((r + (m * count)) +1) / (m * 4))*100)), end="")
-            gradient = x[r] * (hypothesis(x[r], thetas.T) - y[r])
+        for it in range(m):
+            print("\it\033[0Klearning in stochastic mode... {}%".format(int((((it + (m * epoch)) +1) / (m * 4))*100)), end="")
+            gradient = x[it] * (hypothesis(x[it], thetas.T) - y[it])
             thetas -= learning_rate * gradient
         theta.append((thetas, house))
-        count += 1
+        epoch += 1
     print(end="\n")
     return theta
 
 def minibatch_gradient_descent(X,Y):
     learning_rate = 0.1
-    iters = 2000
     x = np.hstack((np.ones((X.shape[0],1)), X))
     m = x.shape[0]
     b = 5
     theta = []
     
-    count = 0
+    epoch = 0
     for house in np.unique(Y):
         thetas = np.zeros(x.shape[1])
         y = np.where(Y == house, 1, 0)
-        for i in range(0, m, b):
-            print("\r\033[0Klearning in mini-batch mode... {}%".format(int((((i+b + (m * count)) +1) / (m * 4))*100)), end="")
-            gradient = np.dot(x[i:i+b].T, (hypothesis(x[i:i+b], thetas) - y[i:i+b]))
+        for it in range(0, m, b):
+            print("\r\033[0Klearning in mini-batch mode... {}%".format(int((((it+b + (m * epoch)) +1) / (m * 4))*100)), end="")
+            gradient = np.dot(x[it:it+b].T, (hypothesis(x[it:it+b], thetas) - y[it:it+b]))
             thetas -= (learning_rate*1/b) * gradient
         theta.append((thetas, house))
-        count += 1
+        epoch += 1
     print(end="\n")
     return theta
 
