@@ -22,16 +22,43 @@ def gradient_descent(X,Y):
     x = np.hstack((np.ones((X.shape[0],1)), X))
     m = x.shape[0]
     theta = []
+    keys = np.unique(Y)
+    keys_size = keys.shape[0]
     
     count = 0
-    for house in np.unique(Y):
+    for k in keys:
         thetas = np.zeros(x.shape[1])
-        y = np.where(Y == house, 1, 0)
+        y = np.where(Y == k, 1, 0)
         for i in range(epoch):
-            print("\r\033[0Klearning in batch mode... {}%".format(int((((i + (epoch * count)) +1) / (epoch * 4))*100)), end="")
+            print("\r\033[0Klearning in batch mode... {}%".format(int((((i + (epoch * count)) +1) / (epoch * keys_size))*100)), end="")
             gradient = np.dot(x.T, (hypothesis(x, thetas) - y)) / m
             thetas -= learning_rate * gradient
-        theta.append((thetas, house))
+        theta.append((thetas, k))
+        count += 1
+    print(end="\n")
+    return theta
+
+def momentum_gradient_descent(X,Y):
+    learning_rate = 0.1
+    beta = 0.9
+    v = 0
+    epoch = 300
+    x = np.hstack((np.ones((X.shape[0],1)), X))
+    m = x.shape[0]
+    theta = []
+    keys = np.unique(Y)
+    keys_size = keys.shape[0]
+    
+    count = 0
+    for k in keys:
+        thetas = np.zeros(x.shape[1])
+        y = np.where(Y == k, 1, 0)
+        for i in range(epoch):
+            print("\r\033[0Klearning in momentum mode... {}%".format(int((((i + (epoch * count)) +1) / (epoch * keys_size))*100)), end="")
+            gradient = np.dot(x.T, (hypothesis(x, thetas) - y)) / m
+            v = beta * v + (1 - beta) * gradient
+            thetas -= learning_rate * v
+        theta.append((thetas, k))
         count += 1
     print(end="\n")
     return theta
@@ -41,16 +68,18 @@ def stochastic_gradient_descent(X,Y):
     x = np.hstack((np.ones((X.shape[0],1)), X))
     m = x.shape[0]
     theta = []
+    keys = np.unique(Y)
+    keys_size = keys.shape[0]
 
     epoch = 0
-    for house in np.unique(Y):
+    for k in keys:
         thetas = np.zeros(x.shape[1])
-        y = np.where(Y == house, 1, 0)
+        y = np.where(Y == k, 1, 0)
         for it in range(m):
-            print("\it\033[0Klearning in stochastic mode... {}%".format(int((((it + (m * epoch)) +1) / (m * 4))*100)), end="")
+            print("\r\033[0Klearning in stochastic mode... {}%".format(int((((it + (m * epoch)) +1) / (m * keys_size))*100)), end="")
             gradient = x[it] * (hypothesis(x[it], thetas.T) - y[it])
             thetas -= learning_rate * gradient
-        theta.append((thetas, house))
+        theta.append((thetas, k))
         epoch += 1
     print(end="\n")
     return theta
@@ -59,18 +88,20 @@ def minibatch_gradient_descent(X,Y):
     learning_rate = 0.1
     x = np.hstack((np.ones((X.shape[0],1)), X))
     m = x.shape[0]
-    b = 5
+    b = 4
     theta = []
+    keys = np.unique(Y)
+    keys_size = keys.shape[0]
     
     epoch = 0
-    for house in np.unique(Y):
+    for k in keys:
         thetas = np.zeros(x.shape[1])
-        y = np.where(Y == house, 1, 0)
+        y = np.where(Y == k, 1, 0)
         for it in range(0, m, b):
-            print("\r\033[0Klearning in mini-batch mode... {}%".format(int((((it+b + (m * epoch)) +1) / (m * 4))*100)), end="")
+            print("\r\033[0Klearning in mini-batch mode... {}%".format(int((((it+b + (m * epoch)) +1) / (m * keys_size))*100)), end="")
             gradient = np.dot(x[it:it+b].T, (hypothesis(x[it:it+b], thetas) - y[it:it+b]))
             thetas -= (learning_rate*1/b) * gradient
-        theta.append((thetas, house))
+        theta.append((thetas, k))
         epoch += 1
     print(end="\n")
     return theta
@@ -85,34 +116,8 @@ def accuracy(y_hat, x):
     acc = np.where(y_hat == x, 1, 0)
     print("Training is completed with an accuracy of {}%".format(round(acc.sum() / len(y_hat), 4) * 100))
 
-"""
-Main
-"""
-
-if __name__ == "__main__":
-    
-    if len(sys.argv) < 2:
-        print('Please run the program with \'--help\' as an argument for more information')
-        exit(1)
-    if sys.argv[1] == "--help":
-        print('''
-        [1stARG=Program Name][2ndARG=File Containing Data] [3rdARG(optional)=Traing Mode]\n
-        \t2ndARG must be a .csv file.\n
-        \t3rdARG may be:\n
-        \t\t1: --minibatch for Mini-Batch Mode\n
-        \t\t2: --stochastic for Stochastic Mode\n
-        \t\t3: --batch for Batch Mode\n
-        \t\t4: if no 3rd argument is passed the Batch Mode will be used as default
-        ''')
-        exit(0)
-    try:
-            data = pd.read_csv(sys.argv[1])
-    except:
-        print('File not found or it is corrupted.\nPlease, make sure that ./dataset_train.csv is available.')
-        exit(2)
-
-    try:
-        X = data[[
+def treating_data(data):
+    X = data[[
             "Hogwarts House",
             "Defense Against the Dark Arts", 
             "Herbology", 
@@ -124,22 +129,74 @@ if __name__ == "__main__":
             "Divination",
             "Astronomy",
             "Transfiguration"
-        ]].dropna()
+        ]].fillna(0)
 
-        X = X.sample(frac=1, random_state=1)
+    X = X.sample(frac=1, random_state=1)
 
-        Y = X["Hogwarts House"].to_numpy()
+    Y = X["Hogwarts House"].to_numpy()
 
-        X.drop(["Hogwarts House"], axis=1, inplace=True)
-        X_norm = normalization(X, X.min(), X.max())
+    X.drop(["Hogwarts House"], axis=1, inplace=True)
+    X_norm = normalization(X, X.min(), X.max())
 
-        X_train, X_test, Y_train, Y_test = train_test_split(X_norm,Y, test_size=0.2, random_state=1)
+    return train_test_split(X_norm,Y, test_size=0.2, random_state=1)
+
+def export_thetas(theta):
+    theta_dict = {column: row for row, column in theta}
+    df_theta = pd.DataFrame(theta_dict)
+    df_theta.to_csv("thetas.csv", index=False)
+
+    thetas = df_theta.to_numpy()
+    houses = df_theta.columns.to_list()
+    return thetas, houses
+
+"""
+Main
+"""
+
+if __name__ == "__main__":
+    
+    """
+    Pre-checks
+    """
+
+    if len(sys.argv) < 2:
+        print('Please run the program with \'--help\' as an argument for more information')
+        exit(1)
+    if sys.argv[1] == "--help":
+        print('''
+        [1stARG=Program Name][2ndARG=File Containing Data] [3rdARG(optional)=Traing Mode]\n
+        \t2ndARG must be a .csv file.\n
+        \t3rdARG may be:\n
+        \t\t1: --minibatch for Mini-Batch Mode\n
+        \t\t2: --stochastic for Stochastic Mode\n
+        \t\t3: --momentum for Momentum Mode\n
+        \t\t4: --batch for Batch Mode\n
+        \t\t5: if no 3rd argument is passed the Batch Mode will be used as default
+        ''')
+        exit(0)
+    """
+    Read file
+    """
+    try:
+            data = pd.read_csv(sys.argv[1])
+    except:
+        print('File not found or it is corrupted.\nPlease, make sure that ./dataset_train.csv is available.')
+        exit(2)
+
+    """
+    Code
+    """
+    try:
+
+        X_train, X_test, Y_train, Y_test = treating_data(data)
 
         if(len(sys.argv) >= 3):
             if(sys.argv[2] == "--minibatch"):
                 theta = minibatch_gradient_descent(X_train,Y_train)
             elif(sys.argv[2] == "--stochastic"):
                 theta = stochastic_gradient_descent(X_train,Y_train)
+            elif(sys.argv[2] == "--momentum"):
+                theta = momentum_gradient_descent(X_train,Y_train)
             elif(sys.argv[2] == "--batch"):
                 theta = gradient_descent(X_train,Y_train)
             else:
@@ -152,8 +209,8 @@ if __name__ == "__main__":
         df_theta = pd.DataFrame(theta_dict)
         df_theta.to_csv("thetas.csv", index=False)
 
-        thetas = df_theta.to_numpy()
-        houses = df_theta.columns.to_list()
+        thetas, houses = export_thetas(theta)
+
         Y_hat = predict(X_test, thetas.T, houses)
         accuracy(Y_hat, Y_test)
         print("Weights were exported to \'thetas.csv\' file")
